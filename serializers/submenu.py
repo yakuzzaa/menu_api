@@ -1,0 +1,17 @@
+from pydantic import BaseModel, UUID4
+
+
+class AddSubmenuSerializer(BaseModel):
+    title: str
+    description: str
+
+
+class GetSubmenuSerializer(BaseModel):
+    menu_id: UUID4
+    id: UUID4
+    title: str
+    description: str
+    dishes_count: int
+
+    class Config:
+        orm_mode = True
