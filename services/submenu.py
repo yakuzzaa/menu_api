@@ -1,10 +1,8 @@
-import uuid
-
 from fastapi import HTTPException
 from sqlalchemy import select, exists, and_
 
-from database import async_session_maker
-from models.models import Submenu
+from database.database import async_session_maker
+from database.models import Submenu
 from services.base import BaseServices
 
 

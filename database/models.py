@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy.orm import relationship, Mapped
 
-from database import Base
+from database.database import Base
 from sqlalchemy import Column, ForeignKey, DECIMAL
 from sqlalchemy.dialects.postgresql import UUID
 
