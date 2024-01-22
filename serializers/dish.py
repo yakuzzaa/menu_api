@@ -1,4 +1,5 @@
 from pydantic import BaseModel, UUID4
+from base import ResponseSerializer
 
 
 class AddDishSerializer(BaseModel):
@@ -20,3 +21,7 @@ class GetDishSerializer(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class DishResponseSerializer(ResponseSerializer):
+    price: float

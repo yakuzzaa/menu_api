@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy import select
 
 from database import async_session_maker
@@ -15,7 +16,7 @@ class MenuServices(BaseServices):
             menus = query.scalars().all()
             menus_list = []
             if not menus:
-                return menus
+                raise HTTPException(status_code=404, detail='Items not found')
             for menu in menus:
                 menu.submenus_count = str(len(menu.submenus))
                 menu.dishes_count = str(sum(len(submenu.dishes) for submenu in menu.submenus))
@@ -28,7 +29,7 @@ class MenuServices(BaseServices):
             query = await session.execute(select(cls.model).filter_by(id=target_id))
             menu = query.scalars().one()
             if not menu:
-                return menu
+                raise HTTPException(status_code=404, detail='Item not found')
             menu.submenus_count = str(len(menu.submenus))
             menu.dishes_count = str(sum(len(submenu.dishes) for submenu in menu.submenus))
             return menu

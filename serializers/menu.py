@@ -1,5 +1,5 @@
 from pydantic import BaseModel, UUID4, Extra
-
+from base import ResponseSerializer
 
 class AddMenuSerializer(BaseModel):
     title: str
@@ -18,3 +18,7 @@ class GetMenuSerializer(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class MenuResponseSerializer(ResponseSerializer):
+    pass
