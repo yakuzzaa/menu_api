@@ -2,7 +2,7 @@ import uuid
 
 from sqlalchemy import insert, update, delete
 
-from database import async_session_maker
+from database.database import async_session_maker
 
 
 class BaseServices:

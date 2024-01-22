@@ -1,9 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy import select, exists, and_
-from sqlalchemy.orm import session
 
-from database import async_session_maker
-from models.models import Menu
+from database.database import async_session_maker
+from database.models import Menu
 from services.base import BaseServices
 
 
