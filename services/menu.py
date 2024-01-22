@@ -1,5 +1,6 @@
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, exists, and_
+from sqlalchemy.orm import session
 
 from database import async_session_maker
 from models.models import Menu
@@ -34,3 +35,10 @@ class MenuServices(BaseServices):
             menu.dishes_count = str(sum(len(submenu.dishes) for submenu in menu.submenus))
             return menu
 
+    @classmethod
+    async def check_menu_exists(cls, target_id):
+        async with async_session_maker() as session:
+            query = await session.execute(
+                select(exists().where(and_(cls.model.id == target_id))))
+            res = query.first()[0]
+            return res

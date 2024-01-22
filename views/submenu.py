@@ -5,6 +5,7 @@ from pydantic import UUID4
 from fastapi import APIRouter, HTTPException
 
 from serializers.submenu import GetSubmenuSerializer, AddSubmenuSerializer, SubmenuResponseSerializer
+from services.menu import MenuServices
 from services.submenu import SubmenuServices
 
 router = APIRouter(
@@ -26,6 +27,8 @@ async def get_submenu(target_menu_id: Optional[UUID4] = None,
 
 @router.post("/{target_menu_id}/submenus")
 async def post_submenu(target_menu_id: Optional[UUID4], submenu: AddSubmenuSerializer) -> SubmenuResponseSerializer:
+    if not await MenuServices.check_menu_exists(target_id=target_menu_id):
+        raise HTTPException(404, "Menu not found")
     submenu_dump = submenu.model_dump()
     submenu_dump["menu_id"] = target_menu_id
     return await SubmenuServices.add(**submenu_dump)

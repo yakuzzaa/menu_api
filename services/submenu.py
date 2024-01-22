@@ -34,16 +34,4 @@ class SubmenuServices(BaseServices):
             submenu.dishes_count = str(len(submenu.dishes))
             return submenu
 
-    @classmethod
-    async def add(cls, **data):
-        async with async_session_maker() as session:
-            query = await session.execute(
-                select(exists().where(and_(Menu.id == data["menu_id"]))))
-            res = query.first()[0]
-            if not res:
-                raise HTTPException(status_code=404, detail='Menu not found')
-            data["id"] = uuid.uuid4()
-            query = insert(cls.model).values(**data)
-            await session.execute(query)
-            await session.commit()
-            return data
+
