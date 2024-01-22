@@ -34,13 +34,13 @@ async def post_submenu(target_menu_id: Optional[UUID4], submenu: AddSubmenuSeria
 @router.patch("/{target_menu_id}/submenus/{target_submenu_id}")
 async def put_submenu(target_menu_id: Optional[UUID4], target_submenu_id: Optional[UUID4],
                       changes: AddSubmenuSerializer) -> SubmenuResponseSerializer:
-    if not await SubmenuServices.check_link(target_menu_id=target_menu_id, target_submenu_id=target_submenu_id):
+    if not await SubmenuServices.check_object_exists(target_menu_id=target_menu_id, target_submenu_id=target_submenu_id):
         raise HTTPException(status_code=404, detail="Item not found")
     return await SubmenuServices.update_by_id(target_id=target_submenu_id, **changes.model_dump())
 
 
 @router.delete("/{target_menu_id}/submenus/{target_submenu_id}")
 async def delete_submenu(target_menu_id: Optional[UUID4], target_submenu_id: Optional[UUID4]):
-    if not await SubmenuServices.check_link(target_menu_id=target_menu_id, target_submenu_id=target_submenu_id):
+    if not await SubmenuServices.check_object_exists(target_menu_id=target_menu_id, target_submenu_id=target_submenu_id):
         raise HTTPException(status_code=404, detail="Item not found")
     return await SubmenuServices.delete_by_id(target_id=target_submenu_id)

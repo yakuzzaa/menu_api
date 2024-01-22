@@ -1,5 +1,5 @@
 from pydantic import BaseModel, UUID4
-from base import ResponseSerializer
+from serializers.base import ResponseSerializer
 
 class AddSubmenuSerializer(BaseModel):
     title: str

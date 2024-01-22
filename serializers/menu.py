@@ -1,5 +1,6 @@
-from pydantic import BaseModel, UUID4, Extra
-from base import ResponseSerializer
+from pydantic import BaseModel, UUID4
+from serializers.base import ResponseSerializer
+
 
 class AddMenuSerializer(BaseModel):
     title: str

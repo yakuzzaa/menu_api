@@ -37,7 +37,7 @@ class BaseServices:
             return f"Запись с id {target_id} удалена."
 
     @classmethod
-    async def check_link(cls, target_menu_id, target_submenu_id):
+    async def check_object_exists(cls, target_menu_id, target_submenu_id):
         async with async_session_maker() as session:
             query = await session.execute(
                 select(exists().where(and_(Submenu.menu_id == target_menu_id, Submenu.id == target_submenu_id))))

@@ -1,9 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy import select, exists, and_
-from sqlalchemy.orm import query
+
 
 from database import async_session_maker
-from models.models import Dish, Submenu
+from models.models import Dish
 from services.base import BaseServices
 
 
