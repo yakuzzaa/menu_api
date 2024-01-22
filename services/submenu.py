@@ -1,8 +1,10 @@
+import uuid
+
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, insert, exists,and_
 
 from database import async_session_maker
-from models.models import Submenu
+from models.models import Submenu, Menu
 from services.base import BaseServices
 
 
@@ -31,3 +33,17 @@ class SubmenuServices(BaseServices):
                 raise HTTPException(status_code=404, detail='Item not found')
             submenu.dishes_count = str(len(submenu.dishes))
             return submenu
+
+    @classmethod
+    async def add(cls, **data):
+        async with async_session_maker() as session:
+            query = await session.execute(
+                select(exists().where(and_(Menu.id == data["menu_id"]))))
+            res = query.first()[0]
+            if not res:
+                raise HTTPException(status_code=404, detail='Menu not found')
+            data["id"] = uuid.uuid4()
+            query = insert(cls.model).values(**data)
+            await session.execute(query)
+            await session.commit()
+            return data

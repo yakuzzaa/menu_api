@@ -8,7 +8,7 @@ from serializers.submenu import GetSubmenuSerializer, AddSubmenuSerializer, Subm
 from services.submenu import SubmenuServices
 
 router = APIRouter(
-    prefix="/menus",
+    prefix="/v1/menus",
     tags=["Подменю"],
 )
 

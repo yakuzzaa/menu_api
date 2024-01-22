@@ -7,7 +7,7 @@ from serializers.dish import GetDishSerializer, AddDishSerializer, DishResponseS
 from services.dish import DishServices
 
 router = APIRouter(
-    prefix="/menus",
+    prefix="/v1/menus",
     tags=["Блюда"],
 )
 

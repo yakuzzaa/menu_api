@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from services.menu import MenuServices
 
 router = APIRouter(
-    prefix="/menus",
+    prefix="/v1/menus",
     tags=["Меню"],
 )
 
