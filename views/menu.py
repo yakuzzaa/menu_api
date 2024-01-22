@@ -3,7 +3,7 @@ from typing import Optional, Annotated
 from pydantic import UUID4
 
 from serializers.menu import AddMenuSerializer, GetMenuSerializer
-from fastapi import APIRouter, Query, Path
+from fastapi import APIRouter
 
 from services.menu import MenuServices
 
@@ -25,7 +25,7 @@ async def get_menu(target_menu_id: Optional[UUID4] = None) -> GetMenuSerializer:
 
 @router.post("")
 async def add_menu(menu: AddMenuSerializer):
-    pass
+    return await MenuServices.add(**menu.model_dump())
 
 
 @router.patch("/{target_menu_id}")

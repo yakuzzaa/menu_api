@@ -5,6 +5,9 @@ class AddSubmenuSerializer(BaseModel):
     title: str
     description: str
 
+    class Config:
+        orm_mode = True
+
 
 class GetSubmenuSerializer(BaseModel):
     menu_id: UUID4

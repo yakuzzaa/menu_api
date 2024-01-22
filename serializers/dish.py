@@ -6,6 +6,9 @@ class AddDishSerializer(BaseModel):
     description: str
     price: float
 
+    class Config:
+        orm_mode = True
+
 
 class GetDishSerializer(BaseModel):
     menu_id: UUID4

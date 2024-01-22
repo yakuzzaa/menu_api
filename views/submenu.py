@@ -4,7 +4,7 @@ from pydantic import UUID4
 
 from fastapi import APIRouter
 
-from serializers.submenu import GetSubmenuSerializer
+from serializers.submenu import GetSubmenuSerializer, AddSubmenuSerializer
 from services.submenu import SubmenuServices
 
 router = APIRouter(
@@ -25,8 +25,10 @@ async def get_submenu(target_menu_id: Optional[UUID4] = None,
 
 
 @router.post("/{target_menu_id}/submenus")
-async def post_submenu():
-    pass
+async def post_submenu(target_menu_id: Optional[UUID4], submenu: AddSubmenuSerializer):
+    submenu_dump = submenu.model_dump()
+    submenu_dump["menu_id"] = target_menu_id
+    return await SubmenuServices.add(**submenu_dump)
 
 
 @router.patch("/{target_menu_id}/submenus")

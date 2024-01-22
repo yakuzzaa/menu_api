@@ -1,9 +1,10 @@
+
 from typing import List, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import UUID4
 
-from serializers.dish import GetDishSerializer
+from serializers.dish import GetDishSerializer, AddDishSerializer
 from services.dish import DishServices
 
 router = APIRouter(
@@ -25,8 +26,12 @@ async def get_dish_by_id(target_menu_id: Optional[UUID4] = None, target_submenu_
 
 
 @router.post("/{target_menu_id}/submenus/{target_submenu_id}/dishes")
-async def post_dish():
-    pass
+async def post_dish(target_menu_id: Optional[UUID4], target_submenu_id: Optional[UUID4], dish: AddDishSerializer):
+    if not await DishServices.check_link(target_menu_id=target_menu_id, target_submenu_id=target_submenu_id):
+        raise HTTPException(status_code=404, detail="Item not found")
+    dish_dump = dish.model_dump()
+    dish_dump["submenu_id"] = target_submenu_id
+    return await DishServices.add(**dish_dump)
 
 
 @router.patch("/{target_menu_id}/submenus/{target_submenu_id}/dishes")

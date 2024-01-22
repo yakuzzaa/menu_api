@@ -1,6 +1,8 @@
-from sqlalchemy import select
+from sqlalchemy import select, exists, and_
+from sqlalchemy.orm import query
+
 from database import async_session_maker
-from models.models import Dish
+from models.models import Dish, Submenu
 from services.base import BaseServices
 
 
@@ -30,3 +32,10 @@ class DishServices(BaseServices):
             dish.menu_id = target_menu_id
             return dish
 
+    @classmethod
+    async def check_link(cls, target_menu_id, target_submenu_id):
+        async with async_session_maker() as session:
+            query = await session.execute(
+                select(exists().where(and_(Submenu.menu_id == target_menu_id, Submenu.id == target_submenu_id))))
+            res = query.first()[0]
+            return res
