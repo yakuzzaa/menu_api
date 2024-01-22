@@ -19,8 +19,8 @@ class MenuServices(BaseServices):
             if not menus:
                 raise HTTPException(status_code=404, detail='Items not found')
             for menu in menus:
-                menu.submenus_count = str(len(menu.submenus))
-                menu.dishes_count = str(sum(len(submenu.dishes) for submenu in menu.submenus))
+                menu.submenus_count = len(menu.submenus)
+                menu.dishes_count = sum(len(submenu.dishes) for submenu in menu.submenus)
                 menus_list.append(menu)
             return menus_list
 

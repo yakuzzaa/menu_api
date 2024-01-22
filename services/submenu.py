@@ -1,10 +1,10 @@
 import uuid
 
 from fastapi import HTTPException
-from sqlalchemy import select, insert, exists,and_
+from sqlalchemy import select, exists, and_
 
 from database import async_session_maker
-from models.models import Submenu, Menu
+from models.models import Submenu
 from services.base import BaseServices
 
 
@@ -20,7 +20,7 @@ class SubmenuServices(BaseServices):
             if not submenus:
                 raise HTTPException(status_code=404, detail='Items not found')
             for submenu in submenus:
-                submenu.dishes_count = str(len(submenu.dishes))
+                submenu.dishes_count = len(submenu.dishes)
                 submenus_list.append(submenu)
             return submenus_list
 
@@ -34,4 +34,10 @@ class SubmenuServices(BaseServices):
             submenu.dishes_count = str(len(submenu.dishes))
             return submenu
 
-
+    @classmethod
+    async def check_object_exists(cls, target_menu_id, target_submenu_id):
+        async with async_session_maker() as session:
+            query = await session.execute(
+                select(exists().where(and_(cls.model.menu_id == target_menu_id, cls.model.id == target_submenu_id))))
+            res = query.first()[0]
+            return res
