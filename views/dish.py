@@ -8,7 +8,7 @@ from services.dish import DishServices
 from services.submenu import SubmenuServices
 
 router = APIRouter(
-    prefix="/v1/menus",
+    prefix="/api/v1/menus",
     tags=["Блюда"],
 )
 
@@ -25,7 +25,7 @@ async def get_dish_by_id(target_menu_id: Optional[UUID4] = None, target_submenu_
     return await DishServices.get_dish_by_id(target_menu_id, target_submenu_id, target_dish_id)
 
 
-@router.post("/{target_menu_id}/submenus/{target_submenu_id}/dishes")
+@router.post("/{target_menu_id}/submenus/{target_submenu_id}/dishes", status_code=201)
 async def post_dish(target_menu_id: Optional[UUID4], target_submenu_id: Optional[UUID4],
                     dish: AddDishSerializer) -> DishResponseSerializer:
     if not await SubmenuServices.check_object_exists(target_menu_id=target_menu_id, target_submenu_id=target_submenu_id):
@@ -38,8 +38,8 @@ async def post_dish(target_menu_id: Optional[UUID4], target_submenu_id: Optional
 @router.patch("/{target_menu_id}/submenus/{target_submenu_id}/dishes/{target_dish_id}")
 async def update_dish(target_menu_id: Optional[UUID4], target_submenu_id: Optional[UUID4],
                       target_dish_id: Optional[UUID4], dish: AddDishSerializer) -> DishResponseSerializer:
-    if not await (SubmenuServices.check_object_exists(target_menu_id=target_menu_id,
-                                                   target_submenu_id=target_submenu_id) and DishServices.get_dish_by_submenu(
+    if not (await SubmenuServices.check_object_exists(target_menu_id=target_menu_id,
+                                                   target_submenu_id=target_submenu_id) and await DishServices.get_dish_by_submenu(
         target_submenu_id, target_dish_id)):
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -49,8 +49,8 @@ async def update_dish(target_menu_id: Optional[UUID4], target_submenu_id: Option
 @router.delete("/{target_menu_id}/submenus/{target_submenu_id}/dishes/{target_dish_id}")
 async def delete_dish(target_menu_id: Optional[UUID4], target_submenu_id: Optional[UUID4],
                       target_dish_id: Optional[UUID4]):
-    if not await (SubmenuServices.check_object_exists(target_menu_id=target_menu_id,
-                                                   target_submenu_id=target_submenu_id) and DishServices.get_dish_by_submenu(
+    if not (await SubmenuServices.check_object_exists(target_menu_id=target_menu_id,
+                                                   target_submenu_id=target_submenu_id) and await DishServices.get_dish_by_submenu(
         target_submenu_id, target_dish_id)):
         raise HTTPException(status_code=404, detail="Item not found")
 

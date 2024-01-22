@@ -17,7 +17,7 @@ class MenuServices(BaseServices):
             menus = query.scalars().all()
             menus_list = []
             if not menus:
-                raise HTTPException(status_code=404, detail='Items not found')
+                return menus
             for menu in menus:
                 menu.submenus_count = len(menu.submenus)
                 menu.dishes_count = sum(len(submenu.dishes) for submenu in menu.submenus)
@@ -28,9 +28,9 @@ class MenuServices(BaseServices):
     async def find_by_id(cls, target_id):
         async with async_session_maker() as session:
             query = await session.execute(select(cls.model).filter_by(id=target_id))
-            menu = query.scalars().one()
+            menu = query.scalars().one_or_none()
             if not menu:
-                raise HTTPException(status_code=404, detail='Item not found')
+                raise HTTPException(status_code=404, detail="menu not found")
             menu.submenus_count = str(len(menu.submenus))
             menu.dishes_count = str(sum(len(submenu.dishes) for submenu in menu.submenus))
             return menu

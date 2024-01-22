@@ -1,11 +1,20 @@
-from pydantic import BaseModel, UUID4
+import decimal
+from decimal import getcontext, Decimal
+
+from pydantic import BaseModel, UUID4, validator, field_validator
 from serializers.base import ResponseSerializer
 
 
 class AddDishSerializer(BaseModel):
     title: str
     description: str
-    price: float
+    price: decimal.Decimal
+
+    @field_validator("price")
+    def make_four_digits(cls, v):
+        getcontext().prec = 4
+        v = Decimal(value=v) * Decimal(1)
+        return v
 
     class Config:
         orm_mode = True
@@ -17,11 +26,11 @@ class GetDishSerializer(BaseModel):
     id: UUID4
     title: str
     description: str
-    price: float
+    price: decimal.Decimal
 
     class Config:
         orm_mode = True
 
 
 class DishResponseSerializer(ResponseSerializer):
-    price: float
+    price: decimal.Decimal

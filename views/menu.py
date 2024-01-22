@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from services.menu import MenuServices
 
 router = APIRouter(
-    prefix="/v1/menus",
+    prefix="/api/v1/menus",
     tags=["Меню"],
 )
 
@@ -19,11 +19,11 @@ async def get_menu() -> list[GetMenuSerializer]:
 
 
 @router.get("/{target_menu_id}")
-async def get_menu(target_menu_id: Optional[UUID4]) -> GetMenuSerializer:
+async def get_menu(target_menu_id: Optional[UUID4]) -> GetMenuSerializer | list:
     return await MenuServices.find_by_id(target_id=target_menu_id)
 
 
-@router.post("")
+@router.post("", status_code=201)
 async def add_menu(menu: AddMenuSerializer) -> MenuResponseSerializer:
     return await MenuServices.add(**menu.model_dump())
 

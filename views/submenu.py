@@ -9,7 +9,7 @@ from services.menu import MenuServices
 from services.submenu import SubmenuServices
 
 router = APIRouter(
-    prefix="/v1/menus",
+    prefix="/api/v1/menus",
     tags=["Подменю"],
 )
 
@@ -25,7 +25,7 @@ async def get_submenu(target_menu_id: Optional[UUID4] = None,
     return await SubmenuServices.find_by_id(target_menu_id=target_menu_id, target_submenu_id=target_submenu_id)
 
 
-@router.post("/{target_menu_id}/submenus")
+@router.post("/{target_menu_id}/submenus", status_code=201)
 async def post_submenu(target_menu_id: Optional[UUID4], submenu: AddSubmenuSerializer) -> SubmenuResponseSerializer:
     if not await MenuServices.check_menu_exists(target_id=target_menu_id):
         raise HTTPException(404, "Menu not found")
