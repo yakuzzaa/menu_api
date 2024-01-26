@@ -3,11 +3,10 @@ name = "y-lab-homework1"
 version = "0.1.0"
 description = ""
 authors = ["yakuzzaa <chornaya.gryazz@gmail.com>"]
-readme = "README.md"
 
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 fastapi = "^0.109.0"
 uvicorn = "^0.26.0"
 sqlalchemy = "^2.0.25"
