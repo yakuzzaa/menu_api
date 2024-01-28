@@ -15,8 +15,17 @@ alembic = "^1.13.1"
 pydantic = {extras = ["dotenv"], version = "^2.5.3"}
 python-dotenv = "^1.0.0"
 ruff = "^0.1.14"
+pytest = "^7.4.4"
+httpx = "^0.26.0"
+pytest-asyncio = "^0.23.3"
+coverage = "^7.4.0"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]

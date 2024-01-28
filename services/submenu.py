@@ -1,8 +1,8 @@
 from fastapi import HTTPException
-from sqlalchemy import select, exists, and_
+from sqlalchemy import select, exists, and_, func
 
 from database.database import async_session_maker
-from database.models import Submenu
+from database.models import Submenu, Dish
 from services.base import BaseServices
 
 
@@ -12,25 +12,61 @@ class SubmenuServices(BaseServices):
     @classmethod
     async def find_all(cls, target_menu_id):
         async with async_session_maker() as session:
-            query = await session.execute(select(cls.model).filter_by(menu_id=target_menu_id))
-            submenus = query.scalars().all()
-            submenus_list = []
+            query = (
+                select(
+                    Submenu,
+                    func.count(Dish.id),
+                )
+                .join(
+                    Submenu.dishes,
+                    isouter=True,
+                )
+                .filter(
+                    Submenu.menu_id == target_menu_id,
+                )
+                .group_by(Submenu.id)
+            )
+            query_result = await session.execute(query)
+            submenus = query_result.all()
+            submenu_list = []
             if not submenus:
-                return submenus_list
+                return submenus
             for submenu in submenus:
-                submenu.dishes_count = len(submenu.dishes)
-                submenus_list.append(submenu)
-            return submenus_list
+                item = submenu[0]
+                item.dishes_count = submenu[1]
+                submenu_list.append(item)
+            return submenu_list
+
 
     @classmethod
     async def find_by_id(cls, target_menu_id, target_submenu_id):
         async with async_session_maker() as session:
-            query = await session.execute(select(cls.model).filter_by(menu_id=target_menu_id, id=target_submenu_id))
-            submenu = query.scalars().one_or_none()
+            query = (
+                select(
+                    Submenu,
+                    func.count(Dish.id),
+                )
+                .join(
+                    Submenu.dishes,
+                    isouter=True,
+                )
+                .filter(
+                    Submenu.menu_id == target_menu_id,
+                )
+                .filter(
+                    Submenu.id == target_submenu_id,
+                )
+                .group_by(
+                    Submenu.id,
+                )
+            )
+            query_result = await session.execute(query)
+            submenu = query_result.one_or_none()
             if not submenu:
                 raise HTTPException(status_code=404, detail="submenu not found")
-            submenu.dishes_count = str(len(submenu.dishes))
-            return submenu
+            result_submenu = submenu[0]
+            result_submenu.dishes_count = submenu[1]
+            return result_submenu
 
     @classmethod
     async def check_object_exists(cls, target_menu_id, target_submenu_id):
