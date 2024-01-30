@@ -5,7 +5,7 @@ services:
     build:
       dockerfile: Dockerfile
     env_file:
-      - .env
+      - .env.test
     environment:
       POSTGRES_HOST: db_test
     entrypoint: sh -c "alembic upgrade head && pytest"
