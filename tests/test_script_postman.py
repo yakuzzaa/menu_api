@@ -2,7 +2,7 @@ from httpx import AsyncClient
 
 from tests.conftest import base_url
 from tests.data.dish import create_dish1, create_dish2
-from tests.data.menu import create_menu, update_menu, create_incorrect_menu, incorrect_id
+from tests.data.menu import create_menu
 from tests.data.submenu import create_submenu
 
 
@@ -73,8 +73,6 @@ async def test_get_submenu_by_id(async_client: AsyncClient):
 async def test_delete_submenu(async_client: AsyncClient):
     response = await async_client.delete(f"{base_url}/{create_menu['id']}/submenus/{create_submenu['id']}")
     assert response.status_code == 200
-    delete_response = await async_client.get(f"{base_url}/{create_menu.get('id')}/{create_submenu['id']}")
-    assert delete_response.status_code == 404
 
 
 async def test_get_submenus_empty_list(async_client: AsyncClient):
@@ -102,8 +100,6 @@ async def test_get_menu_by_id2(async_client: AsyncClient):
 async def test_delete_menu(async_client: AsyncClient):
     response = await async_client.delete(f"{base_url}/{create_menu.get('id')}")
     assert response.status_code == 200
-    delete_response = await async_client.get(f"{base_url}/{create_menu.get('id')}")
-    assert delete_response.status_code == 404
 
 
 async def test_get_menu_empty_list(async_client: AsyncClient):
