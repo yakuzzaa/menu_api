@@ -33,7 +33,7 @@ async def post_dish(target_menu_id: Optional[UUID4], target_submenu_id: Optional
         raise HTTPException(status_code=404, detail="Item not found")
     dish_dump = dish.model_dump()
     dish_dump["submenu_id"] = target_submenu_id
-    return await DishServices.add(**dish_dump)
+    return await DishServices.add(target_menu_id, **dish_dump)
 
 
 @router.patch("/{target_dish_id}")
@@ -44,7 +44,8 @@ async def update_dish(target_menu_id: Optional[UUID4], target_submenu_id: Option
         target_submenu_id, target_dish_id)):
         raise HTTPException(status_code=404, detail="Item not found")
 
-    return await DishServices.update_by_id(target_id=target_dish_id, **dish.model_dump())
+    return await DishServices.update_by_id(menu_id=target_menu_id, submenu_id=target_submenu_id,
+                                           target_id=target_dish_id, **dish.model_dump())
 
 
 @router.delete("/{target_dish_id}")

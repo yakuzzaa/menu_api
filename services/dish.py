@@ -39,3 +39,16 @@ class DishServices(BaseServices):
                 select(exists().where(and_(Dish.submenu_id == target_submenu_id, Dish.id == dish_id))))
             res = query.first()[0]
             return res
+
+    @classmethod
+    async def add(cls, menu_id, **data):
+        data = await super().add(**data)
+        data['menu_id'] = menu_id
+        return data
+
+    @classmethod
+    async def update_by_id(cls, menu_id,submenu_id, target_id, **changes):
+        data = await super().update_by_id(target_id, **changes)
+        data['menu_id'] = menu_id
+        data['submenu_id'] = submenu_id
+        return data

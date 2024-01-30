@@ -37,7 +37,6 @@ class SubmenuServices(BaseServices):
                 submenu_list.append(item)
             return submenu_list
 
-
     @classmethod
     async def find_by_id(cls, target_menu_id, target_submenu_id):
         async with async_session_maker() as session:
@@ -75,3 +74,16 @@ class SubmenuServices(BaseServices):
                 select(exists().where(and_(cls.model.menu_id == target_menu_id, cls.model.id == target_submenu_id))))
             res = query.first()[0]
             return res
+
+    @classmethod
+    async def add(cls, **data):
+        data = await super().add(**data)
+        data['dishes_count'] = 0
+        return data
+
+    @classmethod
+    async def update_by_id(cls, menu_id, target_id, **changes):
+        data = await super().update_by_id(target_id, **changes)
+        data['dishes_count'] = 0
+        data['menu_id'] = menu_id
+        return data

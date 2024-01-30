@@ -30,7 +30,10 @@ class GetDishSerializer(BaseModel):
 
     class Config:
         orm_mode = True
+        from_attributes = True
 
 
 class DishResponseSerializer(ResponseSerializer):
     price: decimal.Decimal
+    submenu_id: UUID4
+    menu_id: UUID4

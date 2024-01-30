@@ -78,3 +78,18 @@ class MenuServices(BaseServices):
                 select(exists().where(and_(cls.model.id == target_id))))
             res = query.first()[0]
             return res
+
+    @classmethod
+    async def add(cls, **data):
+        data = await super().add(**data)
+        data['submenus_count'] = 0
+        data['dishes_count'] = 0
+        return data
+
+    @classmethod
+    async def update_by_id(cls, target_id, **changes):
+        data = await super().update_by_id(target_id, **changes)
+        data['submenus_count'] = 0
+        data['dishes_count'] = 0
+        return data
+

@@ -36,7 +36,7 @@ services:
     networks:
       - y_lab_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready", "-U", "${TEST_POSTGRES_USER}", "-d", "${POSTGRES_DB}" ]
+      test: [ "CMD-SHELL", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}" ]
       interval: 10s
       timeout: 30s
       retries: 5

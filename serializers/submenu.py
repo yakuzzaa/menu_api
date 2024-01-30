@@ -19,7 +19,9 @@ class GetSubmenuSerializer(BaseModel):
 
     class Config:
         orm_mode = True
+        from_attributes = True
 
 
 class SubmenuResponseSerializer(ResponseSerializer):
-    pass
+    dishes_count: int
+    menu_id: UUID4
