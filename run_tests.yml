@@ -24,7 +24,7 @@ services:
     container_name: db_test
     image: postgres:15.1-alpine
     env_file:
-      - .env
+      - .env.test
     environment:
       POSTGRES_DB: "${POSTGRES_DB}"
       POSTGRES_USER: "${POSTGRES_USER}"
