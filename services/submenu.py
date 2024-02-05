@@ -1,89 +1,89 @@
+import uuid
+
 from fastapi import HTTPException
-from sqlalchemy import select, exists, and_, func
+from pydantic import UUID4
 
-from database.database import async_session_maker
-from database.models import Submenu, Dish
-from services.base import BaseServices
+from cache.redis_cache import Cache
+from database.models import Submenu
+from repository.menu import MenuRepository
+from repository.submenu import SubmenuRepository
 
 
-class SubmenuServices(BaseServices):
-    model = Submenu
+class SubmenuServices:
+    @classmethod
+    async def find_all(cls, menu_id: UUID4) -> list[Submenu]:
+        key = f'submenu_list_{menu_id}'
+        cache_submenus = await Cache.get(key)
+        if cache_submenus:
+            return cache_submenus
+
+        submenus: list[Submenu] = await SubmenuRepository.read(menu_id)
+        submenu_list: list = []
+        if not submenus:
+            return submenus
+        for submenu in submenus:
+            item: Submenu = submenu[0]
+            item.dishes_count = submenu[1]
+            submenu_list.append(item)
+        await Cache.create(key, submenu_list)
+        return submenu_list
 
     @classmethod
-    async def find_all(cls, target_menu_id):
-        async with async_session_maker() as session:
-            query = (
-                select(
-                    Submenu,
-                    func.count(Dish.id),
-                )
-                .join(
-                    Submenu.dishes,
-                    isouter=True,
-                )
-                .filter(
-                    Submenu.menu_id == target_menu_id,
-                )
-                .group_by(Submenu.id)
-            )
-            query_result = await session.execute(query)
-            submenus = query_result.all()
-            submenu_list = []
-            if not submenus:
-                return submenus
-            for submenu in submenus:
-                item = submenu[0]
-                item.dishes_count = submenu[1]
-                submenu_list.append(item)
-            return submenu_list
+    async def find_by_id(cls, menu_id: UUID4, target_id: UUID4) -> Submenu:
+        key = f'submenu_{menu_id}_{target_id}'
+        cache_submenu = await Cache.get(key)
+        if cache_submenu:
+            return cache_submenu
+
+        submenu: Submenu = await SubmenuRepository.read_by_id(menu_id, target_id)
+        if not submenu:
+            raise HTTPException(status_code=404, detail='submenu not found')
+        result_submenu: Submenu = submenu[0]
+        result_submenu.dishes_count = submenu[1]
+        await Cache.create(key, result_submenu)
+        return result_submenu
 
     @classmethod
-    async def find_by_id(cls, target_menu_id, target_submenu_id):
-        async with async_session_maker() as session:
-            query = (
-                select(
-                    Submenu,
-                    func.count(Dish.id),
-                )
-                .join(
-                    Submenu.dishes,
-                    isouter=True,
-                )
-                .filter(
-                    Submenu.menu_id == target_menu_id,
-                )
-                .filter(
-                    Submenu.id == target_submenu_id,
-                )
-                .group_by(
-                    Submenu.id,
-                )
-            )
-            query_result = await session.execute(query)
-            submenu = query_result.one_or_none()
-            if not submenu:
-                raise HTTPException(status_code=404, detail="submenu not found")
-            result_submenu = submenu[0]
-            result_submenu.dishes_count = submenu[1]
-            return result_submenu
+    async def add(cls, menu_id, submenu) -> dict:
+        key = [f'menu_{menu_id}', 'menu_list', f'submenu_list_{menu_id}']
+        if not await MenuRepository.check_object_exists(target_id=menu_id):
+            raise HTTPException(404, 'Menu not found')
+        submenu_dump = submenu.model_dump()
+        submenu_dump['menu_id'] = menu_id
+        submenu_dump['id'] = uuid.uuid4()
+        await SubmenuRepository.create(**submenu_dump)
+        submenu_dump['dishes_count'] = 0
+        await Cache.delete(key)
+        return submenu_dump
 
     @classmethod
-    async def check_object_exists(cls, target_menu_id, target_submenu_id):
-        async with async_session_maker() as session:
-            query = await session.execute(
-                select(exists().where(and_(cls.model.menu_id == target_menu_id, cls.model.id == target_submenu_id))))
-            res = query.first()[0]
-            return res
+    async def update_by_id(cls, menu_id: UUID4, target_id: UUID4, **changes) -> dict:
+        key = [
+            f'submenu_list_{menu_id}',
+            f'submenu_{menu_id}_{target_id}',
+        ]
+        if not await SubmenuRepository.check_object_exists(target_menu_id=menu_id,
+                                                           target_submenu_id=target_id):
+            raise HTTPException(status_code=404, detail='Item not found')
+        changes['id'] = target_id
+        await SubmenuRepository.update_by_id(target_id, **changes)
+        changes['dishes_count'] = 0
+        changes['menu_id'] = menu_id
+        await Cache.delete(key)
+        return changes
 
     @classmethod
-    async def add(cls, **data):
-        data = await super().add(**data)
-        data['dishes_count'] = 0
-        return data
-
-    @classmethod
-    async def update_by_id(cls, menu_id, target_id, **changes):
-        data = await super().update_by_id(target_id, **changes)
-        data['dishes_count'] = 0
-        data['menu_id'] = menu_id
-        return data
+    async def delete_by_id(cls, menu_id: UUID4, target_id: UUID4) -> str:
+        key = [
+            f'menu_{menu_id}',
+            'menu_list',
+            f'submenu_list_{menu_id}',
+            f'submenu_{menu_id}_{target_id}',
+            f'dish_{menu_id}_{target_id}',
+        ]
+        if not await SubmenuRepository.check_object_exists(target_menu_id=menu_id,
+                                                           target_submenu_id=target_id):
+            raise HTTPException(status_code=404, detail='Item not found')
+        await SubmenuRepository.delete_by_id(target_id)
+        await Cache.delete(key)
+        return f'Запись с id {target_id} удалена.'

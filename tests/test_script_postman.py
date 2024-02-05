@@ -1,15 +1,15 @@
 from httpx import AsyncClient
 
-from tests.conftest import base_url
 from tests.data.dish import create_dish1, create_dish2
 from tests.data.menu import create_menu
 from tests.data.submenu import create_submenu
+from utils.urls_utils import reverse_url
 
 
 async def test_add_menu(async_client: AsyncClient):
-    response = await async_client.post(base_url, json=create_menu)
+    response = await async_client.post(reverse_url('post_menu'), json=create_menu)
     assert response.status_code == 201
-    assert "id" in response.json()
+    assert 'id' in response.json()
     assert create_menu['title'] == response.json().get('title')
     assert create_menu['description'] == response.json().get('description')
 
@@ -17,7 +17,7 @@ async def test_add_menu(async_client: AsyncClient):
 
 
 async def test_add_submenu(async_client: AsyncClient):
-    response = await async_client.post(f"{base_url}/{create_menu['id']}/submenus", json=create_submenu)
+    response = await async_client.post(reverse_url('post_submenu', target_menu_id=create_menu['id']), json=create_submenu)
     assert response.status_code == 201
     assert 'id' in response.json()
     assert response.json().get('title') == create_submenu['title']
@@ -27,8 +27,9 @@ async def test_add_submenu(async_client: AsyncClient):
 
 
 async def test_add_dish1(async_client: AsyncClient):
-    response = await async_client.post(f"{base_url}/{create_menu['id']}/submenus/{create_submenu['id']}/dishes",
-                                       json=create_dish1)
+    response = await async_client.post(
+        reverse_url('post_dish', target_menu_id=create_menu['id'], target_submenu_id=create_submenu['id']),
+        json=create_dish1)
     assert response.status_code == 201
     assert 'id' in response.json()
     assert response.json().get('title') == create_dish1['title']
@@ -39,8 +40,9 @@ async def test_add_dish1(async_client: AsyncClient):
 
 
 async def test_add_dish2(async_client: AsyncClient):
-    response = await async_client.post(f"{base_url}/{create_menu['id']}/submenus/{create_submenu['id']}/dishes",
-                                       json=create_dish2)
+    response = await async_client.post(
+        reverse_url('post_dish', target_menu_id=create_menu['id'], target_submenu_id=create_submenu['id']),
+        json=create_dish2)
     assert response.status_code == 201
     assert 'id' in response.json()
     assert response.json().get('title') == create_dish2['title']
@@ -51,7 +53,7 @@ async def test_add_dish2(async_client: AsyncClient):
 
 
 async def test_get_menu_by_id(async_client: AsyncClient):
-    response = await async_client.get(f"{base_url}/{create_menu.get('id')}")
+    response = await async_client.get(reverse_url('get_menu', target_menu_id=create_menu['id']))
     assert response.status_code == 200
     assert response.json().get('id') == create_menu.get('id')
     assert response.json().get('title') == create_menu.get('title')
@@ -61,7 +63,8 @@ async def test_get_menu_by_id(async_client: AsyncClient):
 
 
 async def test_get_submenu_by_id(async_client: AsyncClient):
-    response = await async_client.get(f"{base_url}/{create_menu['id']}/submenus/{create_submenu['id']}")
+    response = await async_client.get(
+        reverse_url('get_submenu', target_menu_id=create_menu['id'], target_submenu_id=create_submenu['id']))
     assert response.status_code == 200
     assert response.json().get('id') == create_submenu.get('id')
     assert response.json().get('menu_id') == create_menu.get('id')
@@ -71,24 +74,26 @@ async def test_get_submenu_by_id(async_client: AsyncClient):
 
 
 async def test_delete_submenu(async_client: AsyncClient):
-    response = await async_client.delete(f"{base_url}/{create_menu['id']}/submenus/{create_submenu['id']}")
+    response = await async_client.delete(
+        reverse_url('delete_submenu', target_menu_id=create_menu['id'], target_submenu_id=create_submenu['id']))
     assert response.status_code == 200
 
 
 async def test_get_submenus_empty_list(async_client: AsyncClient):
-    response = await async_client.get(f"{base_url}/{create_menu['id']}/submenus")
+    response = await async_client.get(reverse_url('get_submenus', target_menu_id=create_menu['id']))
     assert response.status_code == 200
     assert response.json() == []
 
 
 async def test_get_dish_empty_list(async_client: AsyncClient):
-    response = await async_client.get(f"{base_url}/{create_menu['id']}/submenus/{create_submenu['id']}/dishes")
+    response = await async_client.get(
+        reverse_url('get_dishes', target_menu_id=create_menu['id'], target_submenu_id=create_submenu['id']))
     assert response.status_code == 200
     assert response.json() == []
 
 
 async def test_get_menu_by_id2(async_client: AsyncClient):
-    response = await async_client.get(f"{base_url}/{create_menu.get('id')}")
+    response = await async_client.get(reverse_url('get_menu', target_menu_id=create_menu['id']))
     assert response.status_code == 200
     assert response.json().get('id') == create_menu.get('id')
     assert response.json().get('title') == create_menu.get('title')
@@ -98,11 +103,11 @@ async def test_get_menu_by_id2(async_client: AsyncClient):
 
 
 async def test_delete_menu(async_client: AsyncClient):
-    response = await async_client.delete(f"{base_url}/{create_menu.get('id')}")
+    response = await async_client.delete(reverse_url('delete_menu', target_menu_id=create_menu['id']))
     assert response.status_code == 200
 
 
 async def test_get_menu_empty_list(async_client: AsyncClient):
-    response = await async_client.get(base_url)
+    response = await async_client.get(reverse_url('get_menus'))
     assert response.status_code == 200
     assert response.json() == []

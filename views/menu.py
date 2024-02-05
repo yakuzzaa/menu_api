@@ -1,42 +1,65 @@
-from typing import Optional
-
+from fastapi import APIRouter
 from pydantic import UUID4
 
-from serializers.menu import AddMenuSerializer, GetMenuSerializer, MenuResponseSerializer
-from fastapi import APIRouter, HTTPException
-
+from database.models import Menu
+from serializers.menu import (
+    AddMenuSerializer,
+    GetMenuSerializer,
+    MenuResponseSerializer,
+)
 from services.menu import MenuServices
 
 router = APIRouter(
-    prefix="/api/v1/menus",
-    tags=["Меню"],
+    prefix='/api/v1/menus',
+    tags=['Меню'],
 )
 
 
-@router.get("")
-async def get_menu() -> list[GetMenuSerializer]:
+@router.get(path='',
+            summary='Получить список меню',
+            response_model=list[GetMenuSerializer],
+            responses={200: {'description': 'Returns menu list'}})
+async def get_menus() -> list[Menu]:
+    """Возвращает список меню с количеством всех подменю и блюд"""
     return await MenuServices.find_all()
 
 
-@router.get("/{target_menu_id}")
-async def get_menu(target_menu_id: Optional[UUID4]) -> GetMenuSerializer | list:
+@router.get(path='/{target_menu_id}',
+            summary='Получить конкретное меню',
+            response_model=GetMenuSerializer,
+            responses={200: {'description': 'Returns menu'},
+                       404: {'description': 'Menu object not found'}
+                       })
+async def get_menu(target_menu_id: UUID4 | None) -> Menu:
+    """Возвращает меню с количеством всех подменю и блюд"""
     return await MenuServices.find_by_id(target_id=target_menu_id)
 
 
-@router.post("", status_code=201)
-async def add_menu(menu: AddMenuSerializer) -> MenuResponseSerializer:
+@router.post(path='',
+             status_code=201,
+             summary='Добавить меню',
+             response_model=MenuResponseSerializer,
+             responses={201: {'description': 'Menu object succesfull created, return object'}})
+async def post_menu(menu: AddMenuSerializer) -> dict:
+    """Создает меню с количеством подменю и блюд равным нулю"""
     return await MenuServices.add(**menu.model_dump())
 
 
-@router.patch("/{target_menu_id}")
-async def update_menu(target_menu_id: Optional[UUID4], changes: AddMenuSerializer) -> MenuResponseSerializer:
-    if not await MenuServices.check_menu_exists(target_id=target_menu_id):
-        raise HTTPException(status_code=404, detail="Item not found")
+@router.patch(path='/{target_menu_id}',
+              summary='Обновить конкретное меню',
+              response_model=MenuResponseSerializer,
+              responses={200: {'description': 'Returns the updated menu'},
+                         404: {'description': 'Menu object not found'}
+                         })
+async def patch_menu(target_menu_id: UUID4 | None, changes: AddMenuSerializer) -> dict:
+    """Обновляет меню c определенным id"""
     return await MenuServices.update_by_id(target_id=target_menu_id, **changes.model_dump())
 
 
-@router.delete("/{target_menu_id}")
-async def delete_menu(target_menu_id: Optional[UUID4]):
-    if not await MenuServices.check_menu_exists(target_id=target_menu_id):
-        raise HTTPException(status_code=404, detail="Item not found")
+@router.delete(path='/{target_menu_id}',
+               summary='Удалить конкретное меню',
+               responses={200: {'description': 'Menu object deleted from the database'},
+                          404: {'description': 'Menu object not found'}})
+async def delete_menu(target_menu_id: UUID4 | None) -> str:
+    """Удаляет меню с определенным id"""
     return await MenuServices.delete_by_id(target_id=target_menu_id)

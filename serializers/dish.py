@@ -1,7 +1,8 @@
 import decimal
-from decimal import getcontext, Decimal
+from decimal import Decimal, getcontext
 
-from pydantic import BaseModel, UUID4, validator, field_validator
+from pydantic import UUID4, BaseModel, field_validator
+
 from serializers.base import ResponseSerializer
 
 
@@ -10,7 +11,7 @@ class AddDishSerializer(BaseModel):
     description: str
     price: decimal.Decimal
 
-    @field_validator("price")
+    @field_validator('price')
     def make_four_digits(cls, v):
         getcontext().prec = 4
         v = Decimal(value=v) * Decimal(1)

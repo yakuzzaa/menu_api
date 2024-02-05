@@ -1,59 +1,83 @@
-from typing import List, Optional
-
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import UUID4
 
-from serializers.dish import GetDishSerializer, AddDishSerializer, DishResponseSerializer
+from database.models import Dish
+from serializers.dish import (
+    AddDishSerializer,
+    DishResponseSerializer,
+    GetDishSerializer,
+)
 from services.dish import DishServices
-from services.submenu import SubmenuServices
 
 router = APIRouter(
-    prefix="/api/v1/menus/{target_menu_id}/submenus/{target_submenu_id}/dishes",
-    tags=["Блюда"],
+    prefix='/api/v1/menus/{target_menu_id}/submenus/{target_submenu_id}/dishes',
+    tags=['Блюда'],
 )
 
 
-@router.get("")
-async def get_dish(target_menu_id: Optional[UUID4] = None, target_submenu_id: Optional[UUID4] = None) -> List[
-    GetDishSerializer]:
-    return await DishServices.get_dish(target_menu_id, target_submenu_id)
+@router.get(path='',
+            summary='Получить список блюд',
+            response_model=list[GetDishSerializer],
+            responses={200: {'description': 'Returns dishes list'}})
+async def get_dishes(target_menu_id: UUID4 | None = None,
+                     target_submenu_id: UUID4 | None = None) -> list[Dish]:
+    """Возвращает список всех блюд"""
+    return await DishServices.get_dish(menu_id=target_menu_id, submenu_id=target_submenu_id)
 
 
-@router.get("/{target_dish_id}")
-async def get_dish_by_id(target_menu_id: Optional[UUID4] = None, target_submenu_id: Optional[UUID4] = None,
-                         target_dish_id: Optional[UUID4] = None) -> GetDishSerializer:
-    return await DishServices.get_dish_by_id(target_menu_id, target_submenu_id, target_dish_id)
+@router.get(path='/{target_dish_id}',
+            summary='Получить конкретное блюдо',
+            response_model=GetDishSerializer,
+            responses={200: {'description': 'Returns dish'},
+                       404: {'description': 'Dish object not found'}
+                       })
+async def get_dish(target_menu_id: UUID4 | None = None, target_submenu_id: UUID4 | None = None,
+                   target_dish_id: UUID4 | None = None) -> Dish:
+    """Возвращает блюдо"""
+    return await DishServices.get_dish_by_id(menu_id=target_menu_id,
+                                             submenu_id=target_submenu_id,
+                                             target_id=target_dish_id)
 
 
-@router.post("", status_code=201)
-async def post_dish(target_menu_id: Optional[UUID4], target_submenu_id: Optional[UUID4],
-                    dish: AddDishSerializer) -> DishResponseSerializer:
-    if not await SubmenuServices.check_object_exists(target_menu_id=target_menu_id,
-                                                     target_submenu_id=target_submenu_id):
-        raise HTTPException(status_code=404, detail="Item not found")
-    dish_dump = dish.model_dump()
-    dish_dump["submenu_id"] = target_submenu_id
-    return await DishServices.add(target_menu_id, **dish_dump)
+@router.post(path='',
+             status_code=201,
+             summary='Добавить блюдо',
+             response_model=DishResponseSerializer,
+             responses={201: {'description': 'Dish object succesfull created, return object'},
+                        404: {'description': 'Menu or submenu object not found'}
+                        }
+             )
+async def post_dish(target_menu_id: UUID4 | None, target_submenu_id: UUID4 | None,
+                    dish: AddDishSerializer) -> dict:
+    """Создает новое блюдо"""
+    return await DishServices.add(menu_id=target_menu_id, submenu_id=target_submenu_id, dish=dish)
 
 
-@router.patch("/{target_dish_id}")
-async def update_dish(target_menu_id: Optional[UUID4], target_submenu_id: Optional[UUID4],
-                      target_dish_id: Optional[UUID4], dish: AddDishSerializer) -> DishResponseSerializer:
-    if not (await SubmenuServices.check_object_exists(target_menu_id=target_menu_id,
-                                                      target_submenu_id=target_submenu_id) and await DishServices.get_dish_by_submenu(
-        target_submenu_id, target_dish_id)):
-        raise HTTPException(status_code=404, detail="Item not found")
+@router.patch(path='/{target_dish_id}',
+              summary='Обновить конкретное блюдо',
+              response_model=DishResponseSerializer,
+              responses={200: {'description': 'Returns the updated dish'},
+                         404: {'description': 'Dish object not found'}
+                         }
+              )
+async def patch_dish(target_menu_id: UUID4 | None, target_submenu_id: UUID4 | None,
+                     target_dish_id: UUID4 | None, dish: AddDishSerializer) -> dict:
+    """Обновляет блюдо с определенным id"""
+    return await DishServices.update_by_id(menu_id=target_menu_id,
+                                           submenu_id=target_submenu_id,
+                                           target_id=target_dish_id,
+                                           **dish.model_dump())
 
-    return await DishServices.update_by_id(menu_id=target_menu_id, submenu_id=target_submenu_id,
-                                           target_id=target_dish_id, **dish.model_dump())
 
-
-@router.delete("/{target_dish_id}")
-async def delete_dish(target_menu_id: Optional[UUID4], target_submenu_id: Optional[UUID4],
-                      target_dish_id: Optional[UUID4]):
-    if not (await SubmenuServices.check_object_exists(target_menu_id=target_menu_id,
-                                                      target_submenu_id=target_submenu_id) and await DishServices.get_dish_by_submenu(
-        target_submenu_id, target_dish_id)):
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    return await DishServices.delete_by_id(target_id=target_dish_id)
+@router.delete(path='/{target_dish_id}',
+               summary='Удалить конкретное блюдо',
+               responses={200: {'description': 'Dish object deleted from the database'},
+                          404: {'description': 'Dish object not found'}
+                          }
+               )
+async def delete_dish(target_menu_id: UUID4 | None, target_submenu_id: UUID4 | None,
+                      target_dish_id: UUID4 | None) -> str:
+    """Удаляет блюдо с определнным id"""
+    return await DishServices.delete_by_id(menu_id=target_menu_id,
+                                           submenu_id=target_submenu_id,
+                                           target_id=target_dish_id)

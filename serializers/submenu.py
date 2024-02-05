@@ -1,4 +1,5 @@
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4, BaseModel
+
 from serializers.base import ResponseSerializer
 
 
