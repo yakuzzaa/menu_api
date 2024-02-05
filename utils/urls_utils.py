@@ -3,8 +3,6 @@ from fastapi.routing import APIRoute
 
 from main import app
 
-base_url: str = '/api/v1/menus'
-
 
 def get_route(app: FastAPI, name: str) -> APIRoute:
     results = [
