@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter
 from pydantic import UUID4
 
@@ -19,7 +21,7 @@ router = APIRouter(
             summary='Получить список меню',
             response_model=list[GetMenuSerializer],
             responses={200: {'description': 'Returns menu list'}})
-async def get_menus() -> list[Menu]:
+async def get_menus() -> list[Menu] | list[dict[str, Any]] | dict[str, Any]:
     """Возвращает список меню с количеством всех подменю и блюд"""
     return await MenuServices.find_all()
 
@@ -30,7 +32,7 @@ async def get_menus() -> list[Menu]:
             responses={200: {'description': 'Returns menu'},
                        404: {'description': 'Menu object not found'}
                        })
-async def get_menu(target_menu_id: UUID4 | None) -> Menu:
+async def get_menu(target_menu_id: UUID4 | None) -> Menu | dict[str, Any]:
     """Возвращает меню с количеством всех подменю и блюд"""
     return await MenuServices.find_by_id(target_id=target_menu_id)
 
@@ -40,7 +42,7 @@ async def get_menu(target_menu_id: UUID4 | None) -> Menu:
              summary='Добавить меню',
              response_model=MenuResponseSerializer,
              responses={201: {'description': 'Menu object succesfull created, return object'}})
-async def post_menu(menu: AddMenuSerializer) -> dict:
+async def post_menu(menu: AddMenuSerializer) -> dict[str, Any]:
     """Создает меню с количеством подменю и блюд равным нулю"""
     return await MenuServices.add(**menu.model_dump())
 
@@ -51,7 +53,7 @@ async def post_menu(menu: AddMenuSerializer) -> dict:
               responses={200: {'description': 'Returns the updated menu'},
                          404: {'description': 'Menu object not found'}
                          })
-async def patch_menu(target_menu_id: UUID4 | None, changes: AddMenuSerializer) -> dict:
+async def patch_menu(target_menu_id: UUID4 | None, changes: AddMenuSerializer) -> dict[str, Any]:
     """Обновляет меню c определенным id"""
     return await MenuServices.update_by_id(target_id=target_menu_id, **changes.model_dump())
 

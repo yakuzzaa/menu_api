@@ -1,9 +1,10 @@
 import uuid
+from typing import Any
 
 from fastapi import HTTPException
 from pydantic import UUID4
 
-from cache.redis_cache import Cache
+from cache.redis_cache import Cache, CacheReturnType
 from database.models import Submenu
 from repository.menu import MenuRepository
 from repository.submenu import SubmenuRepository
@@ -11,9 +12,9 @@ from repository.submenu import SubmenuRepository
 
 class SubmenuServices:
     @classmethod
-    async def find_all(cls, menu_id: UUID4) -> list[Submenu]:
-        key = f'submenu_list_{menu_id}'
-        cache_submenus = await Cache.get(key)
+    async def find_all(cls, menu_id: UUID4) -> list[Submenu] | list[dict[str, Any]] | dict[str, Any]:
+        key: str = f'submenu_list_{menu_id}'
+        cache_submenus: CacheReturnType = await Cache.get(key)
         if cache_submenus:
             return cache_submenus
 
@@ -29,9 +30,9 @@ class SubmenuServices:
         return submenu_list
 
     @classmethod
-    async def find_by_id(cls, menu_id: UUID4, target_id: UUID4) -> Submenu:
-        key = f'submenu_{menu_id}_{target_id}'
-        cache_submenu = await Cache.get(key)
+    async def find_by_id(cls, menu_id: UUID4, target_id: UUID4) -> Submenu | dict[str, Any]:
+        key: str = f'submenu_{menu_id}_{target_id}'
+        cache_submenu: CacheReturnType = await Cache.get(key)
         if cache_submenu:
             return cache_submenu
 
@@ -44,11 +45,11 @@ class SubmenuServices:
         return result_submenu
 
     @classmethod
-    async def add(cls, menu_id, submenu) -> dict:
-        key = [f'menu_{menu_id}', 'menu_list', f'submenu_list_{menu_id}']
+    async def add(cls, menu_id, submenu) -> dict[str, Any]:
+        key: list[str] = [f'menu_{menu_id}', 'menu_list', f'submenu_list_{menu_id}']
         if not await MenuRepository.check_object_exists(target_id=menu_id):
             raise HTTPException(404, 'Menu not found')
-        submenu_dump = submenu.model_dump()
+        submenu_dump: dict[str, Any] = submenu.model_dump()
         submenu_dump['menu_id'] = menu_id
         submenu_dump['id'] = uuid.uuid4()
         await SubmenuRepository.create(**submenu_dump)
@@ -57,8 +58,8 @@ class SubmenuServices:
         return submenu_dump
 
     @classmethod
-    async def update_by_id(cls, menu_id: UUID4, target_id: UUID4, **changes) -> dict:
-        key = [
+    async def update_by_id(cls, menu_id: UUID4, target_id: UUID4, **changes) -> dict[str, Any]:
+        key: list[str] = [
             f'submenu_list_{menu_id}',
             f'submenu_{menu_id}_{target_id}',
         ]
@@ -74,7 +75,7 @@ class SubmenuServices:
 
     @classmethod
     async def delete_by_id(cls, menu_id: UUID4, target_id: UUID4) -> str:
-        key = [
+        key: list[str] = [
             f'menu_{menu_id}',
             'menu_list',
             f'submenu_list_{menu_id}',

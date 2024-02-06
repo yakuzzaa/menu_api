@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter
 from pydantic import UUID4
 
@@ -20,7 +22,7 @@ router = APIRouter(
             response_model=list[GetDishSerializer],
             responses={200: {'description': 'Returns dishes list'}})
 async def get_dishes(target_menu_id: UUID4 | None = None,
-                     target_submenu_id: UUID4 | None = None) -> list[Dish]:
+                     target_submenu_id: UUID4 | None = None) -> list[Dish] | list[dict[str, Any]] | dict[str, Any]:
     """Возвращает список всех блюд"""
     return await DishServices.get_dish(menu_id=target_menu_id, submenu_id=target_submenu_id)
 
@@ -32,7 +34,7 @@ async def get_dishes(target_menu_id: UUID4 | None = None,
                        404: {'description': 'Dish object not found'}
                        })
 async def get_dish(target_menu_id: UUID4 | None = None, target_submenu_id: UUID4 | None = None,
-                   target_dish_id: UUID4 | None = None) -> Dish:
+                   target_dish_id: UUID4 | None = None) -> Dish | dict[str, Any]:
     """Возвращает блюдо"""
     return await DishServices.get_dish_by_id(menu_id=target_menu_id,
                                              submenu_id=target_submenu_id,
@@ -48,7 +50,7 @@ async def get_dish(target_menu_id: UUID4 | None = None, target_submenu_id: UUID4
                         }
              )
 async def post_dish(target_menu_id: UUID4 | None, target_submenu_id: UUID4 | None,
-                    dish: AddDishSerializer) -> dict:
+                    dish: AddDishSerializer) -> dict[str, Any]:
     """Создает новое блюдо"""
     return await DishServices.add(menu_id=target_menu_id, submenu_id=target_submenu_id, dish=dish)
 
@@ -61,7 +63,7 @@ async def post_dish(target_menu_id: UUID4 | None, target_submenu_id: UUID4 | Non
                          }
               )
 async def patch_dish(target_menu_id: UUID4 | None, target_submenu_id: UUID4 | None,
-                     target_dish_id: UUID4 | None, dish: AddDishSerializer) -> dict:
+                     target_dish_id: UUID4 | None, dish: AddDishSerializer) -> dict[str, Any]:
     """Обновляет блюдо с определенным id"""
     return await DishServices.update_by_id(menu_id=target_menu_id,
                                            submenu_id=target_submenu_id,

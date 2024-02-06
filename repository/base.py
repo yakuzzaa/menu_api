@@ -1,6 +1,7 @@
 from typing import Generic, TypeVar
 
-from sqlalchemy import delete, insert, update
+from sqlalchemy import ValuesBase, delete, insert, update
+from sqlalchemy.sql.dml import DMLWhereBase, Update
 
 from database.database import Base, async_session_maker
 
@@ -11,22 +12,22 @@ class BaseRepository(Generic[T_Base]):
     model: T_Base
 
     @classmethod
-    async def create(cls, **data):
+    async def create(cls, **data) -> None:
         async with async_session_maker() as session:
-            query = insert(cls.model).values(**data)
+            query: ValuesBase = insert(cls.model).values(**data)
             await session.execute(query)
             await session.commit()
 
     @classmethod
-    async def update_by_id(cls, target_id, **changes):
+    async def update_by_id(cls, target_id, **changes) -> None:
         async with async_session_maker() as session:
-            query = update(cls.model).where(cls.model.id == target_id).values(**changes)
+            query: Update = update(cls.model).where(cls.model.id == target_id).values(**changes)
             await session.execute(query)
             await session.commit()
 
     @classmethod
-    async def delete_by_id(cls, target_id):
+    async def delete_by_id(cls, target_id) -> None:
         async with async_session_maker() as session:
-            query = delete(cls.model).where(cls.model.id == target_id)
+            query: DMLWhereBase = delete(cls.model).where(cls.model.id == target_id)
             await session.execute(query)
             await session.commit()

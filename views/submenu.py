@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter
 from pydantic import UUID4
 
@@ -17,7 +19,7 @@ router = APIRouter(
 
 @router.get('', summary='Получить список подменю', response_model=list[GetSubmenuSerializer],
             responses={200: {'description': 'Returns submenu list'}})
-async def get_submenus(target_menu_id: UUID4 | None = None) -> list[Submenu]:
+async def get_submenus(target_menu_id: UUID4 | None = None) -> list[Submenu] | list[dict[str, Any]] | dict[str, Any]:
     """Возвращает список подменю с количеством всех блюд"""
     return await SubmenuServices.find_all(menu_id=target_menu_id)
 
@@ -29,7 +31,7 @@ async def get_submenus(target_menu_id: UUID4 | None = None) -> list[Submenu]:
                        404: {'description': 'Submenu object not found'}
                        })
 async def get_submenu(target_menu_id: UUID4 | None = None,
-                      target_submenu_id: UUID4 | None = None) -> Submenu:
+                      target_submenu_id: UUID4 | None = None) -> Submenu | dict[str, Any]:
     """Возвращает подменю с количеством всех блюд"""
     return await SubmenuServices.find_by_id(menu_id=target_menu_id, target_id=target_submenu_id)
 
@@ -41,7 +43,7 @@ async def get_submenu(target_menu_id: UUID4 | None = None,
              responses={201: {'description': 'Submenu object succesfull created, return object'},
                         404: {'description': 'Menu object not found'}
                         })
-async def post_submenu(target_menu_id: UUID4 | None, submenu: AddSubmenuSerializer) -> dict:
+async def post_submenu(target_menu_id: UUID4 | None, submenu: AddSubmenuSerializer) -> dict[str, Any]:
     """Создает подменю c количеством блюд равным 0"""
     return await SubmenuServices.add(menu_id=target_menu_id, submenu=submenu)
 
@@ -53,7 +55,7 @@ async def post_submenu(target_menu_id: UUID4 | None, submenu: AddSubmenuSerializ
                          404: {'description': 'Submenu object not found'}
                          })
 async def patch_submenu(target_menu_id: UUID4 | None, target_submenu_id: UUID4 | None,
-                        changes: AddSubmenuSerializer) -> dict:
+                        changes: AddSubmenuSerializer) -> dict[str, Any]:
     """Обновляет подменю с определенным id"""
     return await SubmenuServices.update_by_id(menu_id=target_menu_id, target_id=target_submenu_id,
                                               **changes.model_dump())

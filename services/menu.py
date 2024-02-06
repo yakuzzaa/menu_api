@@ -1,18 +1,19 @@
 import uuid
+from typing import Any
 
 from fastapi import HTTPException
 from pydantic import UUID4
 
-from cache.redis_cache import Cache
+from cache.redis_cache import Cache, CacheReturnType
 from database.models import Menu
 from repository.menu import MenuRepository
 
 
 class MenuServices:
     @classmethod
-    async def find_all(cls) -> list[Menu]:
-        key = 'menu_list'
-        cache_menus = await Cache.get(key)
+    async def find_all(cls) -> list[Menu] | list[dict[str, Any]] | dict[str, Any]:
+        key: str = 'menu_list'
+        cache_menus: CacheReturnType = await Cache.get(key)
         if cache_menus:
             return cache_menus
         menus: list[Menu] = await MenuRepository.read()
@@ -28,9 +29,9 @@ class MenuServices:
         return menu_list
 
     @classmethod
-    async def find_by_id(cls, target_id: UUID4) -> Menu:
-        key = f'menu_{target_id}'
-        cache_menu = await Cache.get(key)
+    async def find_by_id(cls, target_id: UUID4) -> Menu | dict[str, Any]:
+        key: str = f'menu_{target_id}'
+        cache_menu: CacheReturnType = await Cache.get(key)
         if cache_menu:
             return cache_menu
 
@@ -45,7 +46,7 @@ class MenuServices:
         return result_menu
 
     @classmethod
-    async def add(cls, **data) -> dict:
+    async def add(cls, **data) -> dict[str, Any]:
         data['id'] = uuid.uuid4()
         await MenuRepository.create(**data)
         data['submenus_count'] = 0
@@ -54,8 +55,8 @@ class MenuServices:
         return data
 
     @classmethod
-    async def update_by_id(cls, target_id: UUID4, **changes) -> dict:
-        key = [f'menu_{target_id}', 'menu_list']
+    async def update_by_id(cls, target_id: UUID4, **changes) -> dict[str, Any]:
+        key: list[str] = [f'menu_{target_id}', 'menu_list']
 
         if not await MenuRepository.check_object_exists(target_id=target_id):
             raise HTTPException(status_code=404, detail='Item not found')
@@ -68,7 +69,7 @@ class MenuServices:
 
     @classmethod
     async def delete_by_id(cls, target_id: UUID4) -> str:
-        key = [
+        key: list[str] = [
             f'menu_{target_id}',
             'menu_list',
             f'submenu_list_{target_id}',

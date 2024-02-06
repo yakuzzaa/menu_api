@@ -1,4 +1,4 @@
-from sqlalchemy import and_, exists, func, select
+from sqlalchemy import ResultProxy, Select, and_, exists, func, select
 
 from database.database import async_session_maker
 from database.models import Dish, Submenu
@@ -11,7 +11,7 @@ class SubmenuRepository(BaseRepository):
     @classmethod
     async def read(cls, menu_id) -> list[Submenu]:
         async with async_session_maker() as session:
-            query = (
+            query: Select[tuple[Submenu, int]] = (
                 select(
                     Submenu,
                     func.count(Dish.id),
@@ -31,7 +31,7 @@ class SubmenuRepository(BaseRepository):
     @classmethod
     async def read_by_id(cls, menu_id, submenu_id) -> Submenu:
         async with async_session_maker() as session:
-            query = (
+            query: Select[Submenu, int] = (
                 select(
                     Submenu,
                     func.count(Dish.id),
@@ -56,7 +56,7 @@ class SubmenuRepository(BaseRepository):
     @classmethod
     async def check_object_exists(cls, target_menu_id, target_submenu_id) -> bool:
         async with async_session_maker() as session:
-            query = await session.execute(
+            query: ResultProxy = await session.execute(
                 select(exists().where(and_(cls.model.menu_id == target_menu_id, cls.model.id == target_submenu_id))))
             res = query.first()[0]
             return res

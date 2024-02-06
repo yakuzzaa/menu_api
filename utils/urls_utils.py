@@ -5,7 +5,7 @@ from main import app
 
 
 def get_route(app: FastAPI, name: str) -> APIRoute:
-    results = [
+    results: list[APIRoute] = [
         route
         for route in app.routes
         if isinstance(route, APIRoute) and route.name == name
