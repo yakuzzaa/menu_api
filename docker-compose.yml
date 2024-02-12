@@ -60,6 +60,67 @@ services:
       timeout: 5s
       retries: 5
 
+  celery-beat:
+    container_name: celery_beat
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+      REDIS_HOST: redis
+      BROKER_URL: "${BROKER_URL}"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      y_lab_web:
+        condition: service_started
+      redis:
+        condition: service_started
+    command: [ "celery", "-A", "google_sheet.sheet_parse", "beat", "--loglevel=info" ]
+    networks:
+      - y_lab_network
+
+  celery_worker:
+      container_name: celery_worker
+
+      build:
+        context: .
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      environment:
+        POSTGRES_HOST: db
+        REDIS_HOST: redis
+        BROKER_URL: "${BROKER_URL}"
+      depends_on:
+        rabbitmq:
+          condition: service_healthy
+        db:
+          condition: service_healthy
+        y_lab_web:
+          condition: service_started
+        redis:
+          condition: service_started
+      command: [ "celery", "-A", "google_sheet.sheet_parse", "worker", "--loglevel=info"]
+      networks:
+        - y_lab_network
+
+  rabbitmq:
+      container_name: rabbitmq
+      image: "rabbitmq"
+      ports:
+        - "5672:5672"
+      healthcheck:
+        test: rabbitmq-diagnostics -q ping
+        interval: 30s
+        timeout: 30s
+        retries: 3
+      networks:
+        - y_lab_network
 networks:
   y_lab_network:
     name: y_lab_network

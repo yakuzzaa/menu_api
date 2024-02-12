@@ -38,3 +38,14 @@ class DishResponseSerializer(ResponseSerializer):
     price: decimal.Decimal
     submenu_id: UUID4
     menu_id: UUID4
+
+
+class DishForSubmenuSerializer(BaseModel):
+    id: UUID4
+    title: str
+    description: str
+    price: decimal.Decimal
+
+    class Config:
+        orm_mode = True
+        from_attributes = True

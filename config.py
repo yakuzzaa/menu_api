@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     REDIS_PORT: int
     REDIS_HOST: str
+    BROKER_URL: str
 
     class Config:
         env_file = '.env'

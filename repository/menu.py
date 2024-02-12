@@ -1,4 +1,5 @@
 from sqlalchemy import ResultProxy, Select, and_, distinct, exists, func, select
+from sqlalchemy.orm import selectinload
 
 from database.database import async_session_maker
 from database.models import Dish, Menu, Submenu
@@ -9,13 +10,20 @@ class MenuRepository(BaseRepository):
     model = Menu
 
     @classmethod
+    async def read_all(cls):
+        async with async_session_maker() as session:
+            query = select(Menu).options(selectinload(Menu.submenus).selectinload(Submenu.dishes))
+            query_result = await session.execute(query)
+            return query_result.all()
+
+    @classmethod
     async def read(cls) -> list[Menu]:
         async with async_session_maker() as session:
             query: Select[tuple[Menu, int, int]] = (
                 select(
                     Menu,
                     func.count(distinct(Submenu.id)),
-                    func.count(Dish.id),
+                    func.count(Dish.id)
                 )
                 .join(
                     Menu.submenus,
