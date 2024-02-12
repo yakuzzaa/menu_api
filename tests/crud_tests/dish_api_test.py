@@ -68,8 +68,9 @@ async def test_get_all_data(async_client: AsyncClient):
     all_data = [GetFullMenuSerializer.model_validate(item) for item in
                 await menu_services.full_menu_info()]
     json = response.json()
+    obj_from_response = [GetFullMenuSerializer(**item) for item in json]
     assert response.status_code == 200
-    assert json == all_data
+    assert obj_from_response == all_data
 
 
 async def test_add_incorrect_dish(async_client: AsyncClient):
