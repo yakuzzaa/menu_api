@@ -1,11 +1,12 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks, Depends
 from pydantic import UUID4
 
 from database.models import Menu
 from serializers.menu import (
     AddMenuSerializer,
+    GetFullMenuSerializer,
     GetMenuSerializer,
     MenuResponseSerializer,
 )
@@ -17,13 +18,23 @@ router = APIRouter(
 )
 
 
+@router.get(path='/all',
+            summary='Получить список всех меню со всеми подменю и блюдами',
+            response_model=list[GetFullMenuSerializer],
+            responses={200: {'description': 'Returns full menu list'}})
+async def get_all(response: MenuServices = Depends(),
+                  background_tasks: BackgroundTasks = BackgroundTasks()) -> list[dict] | dict[str, Any] | list[Menu]:
+    return await response.full_menu_info()
+
+
 @router.get(path='',
             summary='Получить список меню',
             response_model=list[GetMenuSerializer],
             responses={200: {'description': 'Returns menu list'}})
-async def get_menus() -> list[Menu] | list[dict[str, Any]] | dict[str, Any]:
+async def get_menus(response: MenuServices = Depends(),
+                    background_tasks: BackgroundTasks = BackgroundTasks()) -> list[Menu] | list[dict[str, Any]] | dict[str, Any]:
     """Возвращает список меню с количеством всех подменю и блюд"""
-    return await MenuServices.find_all()
+    return await response.find_all()
 
 
 @router.get(path='/{target_menu_id}',
@@ -32,9 +43,12 @@ async def get_menus() -> list[Menu] | list[dict[str, Any]] | dict[str, Any]:
             responses={200: {'description': 'Returns menu'},
                        404: {'description': 'Menu object not found'}
                        })
-async def get_menu(target_menu_id: UUID4 | None) -> Menu | dict[str, Any]:
+async def get_menu(target_menu_id: UUID4 | None,
+                   response: MenuServices = Depends(),
+                   background_tasks: BackgroundTasks = BackgroundTasks()
+                   ) -> Menu | dict[str, Any]:
     """Возвращает меню с количеством всех подменю и блюд"""
-    return await MenuServices.find_by_id(target_id=target_menu_id)
+    return await response.find_by_id(target_id=target_menu_id)
 
 
 @router.post(path='',
@@ -42,9 +56,12 @@ async def get_menu(target_menu_id: UUID4 | None) -> Menu | dict[str, Any]:
              summary='Добавить меню',
              response_model=MenuResponseSerializer,
              responses={201: {'description': 'Menu object succesfull created, return object'}})
-async def post_menu(menu: AddMenuSerializer) -> dict[str, Any]:
+async def post_menu(menu: AddMenuSerializer,
+                    response: MenuServices = Depends(),
+                    background_tasks: BackgroundTasks = BackgroundTasks()
+                    ) -> dict[str, Any]:
     """Создает меню с количеством подменю и блюд равным нулю"""
-    return await MenuServices.add(**menu.model_dump())
+    return await response.add(**menu.model_dump())
 
 
 @router.patch(path='/{target_menu_id}',
@@ -53,15 +70,22 @@ async def post_menu(menu: AddMenuSerializer) -> dict[str, Any]:
               responses={200: {'description': 'Returns the updated menu'},
                          404: {'description': 'Menu object not found'}
                          })
-async def patch_menu(target_menu_id: UUID4 | None, changes: AddMenuSerializer) -> dict[str, Any]:
+async def patch_menu(target_menu_id: UUID4 | None,
+                     changes: AddMenuSerializer,
+                     response: MenuServices = Depends(),
+                     background_tasks: BackgroundTasks = BackgroundTasks()
+                     ) -> dict[str, Any]:
     """Обновляет меню c определенным id"""
-    return await MenuServices.update_by_id(target_id=target_menu_id, **changes.model_dump())
+    return await response.update_by_id(target_id=target_menu_id, **changes.model_dump())
 
 
 @router.delete(path='/{target_menu_id}',
                summary='Удалить конкретное меню',
                responses={200: {'description': 'Menu object deleted from the database'},
                           404: {'description': 'Menu object not found'}})
-async def delete_menu(target_menu_id: UUID4 | None) -> str:
+async def delete_menu(target_menu_id: UUID4 | None,
+                      response: MenuServices = Depends(),
+                      background_tasks: BackgroundTasks = BackgroundTasks()
+                      ) -> str:
     """Удаляет меню с определенным id"""
-    return await MenuServices.delete_by_id(target_id=target_menu_id)
+    return await response.delete_by_id(target_id=target_menu_id)

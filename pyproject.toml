@@ -23,6 +23,9 @@ sqlalchemy-utils = "^0.41.1"
 pre-commit = "^3.6.0"
 redis = "^5.0.1"
 types-redis = "^4.6.0.20240106"
+gspread = "^6.0.1"
+celery = "^5.3.6"
+asgiref = "^3.7.2"
 
 
 [tool.poetry.group.dev.dependencies]
