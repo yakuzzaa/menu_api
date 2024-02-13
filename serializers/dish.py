@@ -28,6 +28,7 @@ class GetDishSerializer(BaseModel):
     title: str
     description: str
     price: decimal.Decimal
+    price_with_discount: decimal.Decimal | str = 'Без скидки'
 
     class Config:
         orm_mode = True
@@ -45,6 +46,7 @@ class DishForSubmenuSerializer(BaseModel):
     title: str
     description: str
     price: decimal.Decimal
+    price_with_discount: decimal.Decimal | str
 
     class Config:
         orm_mode = True

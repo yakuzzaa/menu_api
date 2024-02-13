@@ -8,6 +8,7 @@ from cache.background_tasks import create_background_task, delete_background_tas
 from cache.redis_cache import Cache, CacheReturnType
 from database.models import Menu
 from repository.menu import MenuRepository
+from utils.discount_utils import get_price_with_discount
 
 
 class MenuServices:
@@ -39,7 +40,9 @@ class MenuServices:
                                 'id': dish.id,
                                 'title': dish.title,
                                 'description': dish.description,
-                                'price': str(dish.price)
+                                'price': str(dish.price),
+                                'price_with_discount': get_price_with_discount(str(dish.id)) if get_price_with_discount(
+                                    str(dish.id)) else 'Без скидки'
                             } for dish in submenu.dishes
                         ]
                     } for submenu in menu[0].submenus

@@ -11,13 +11,13 @@ from pydantic import UUID4
 from database.redis import redis_client
 from google_sheet.celery_app import celery
 from repository.google_sheet import (
+    check_and_delite_dish,
+    check_and_delite_menu,
+    check_and_delite_submenu,
     create_update_dish,
     create_update_menu,
     create_update_submenu,
 )
-from views.dish import delete_dish
-from views.menu import delete_menu
-from views.submenu import delete_submenu
 
 SPREADSHEET_URL: str = 'https://docs.google.com/spreadsheets/d/1BUrzAiPP5ZVJ5VTjNHA5yTIMPNJmHVUWKSVbImB_Vb4/edit#gid=0'
 global_data_path = 'google_sheet/global_data.json'
@@ -84,6 +84,8 @@ async def get_data_from_sheet() -> list[dict]:
             item_dict['title'] = item[3].replace('\n', '')
             item_dict['description'] = item[4].replace('\n', '')
             item_dict['price'] = item[5].replace(',', '.').replace('\n', '')
+            if item[6]:
+                item_dict['discount'] = item[6].replace(',', '.').replace('\n', '')
             data_list.append(item_dict)
     return data_list
 
@@ -137,13 +139,13 @@ async def sheet_crud(diff_data: list[dict]) -> None:
 
         action_to_function_mapping: dict = {'menu_create': create_update_menu,
                                             'menu_update': create_update_menu,
-                                            'menu_delete': delete_menu,
+                                            'menu_delete': check_and_delite_menu,
                                             'submenu_create': create_update_submenu,
                                             'submenu_update': create_update_submenu,
-                                            'submenu_delete': delete_submenu,
+                                            'submenu_delete': check_and_delite_submenu,
                                             'dish_create': create_update_dish,
                                             'dish_update': create_update_dish,
-                                            'dish_delete': delete_dish
+                                            'dish_delete': check_and_delite_dish
                                             }
         await action_to_function_mapping[action](data[action])
 

@@ -10,6 +10,7 @@ from database.models import Dish
 from repository.dish import DishRepository
 from repository.submenu import SubmenuRepository
 from serializers.dish import AddDishSerializer
+from utils.discount_utils import get_price_with_discount
 
 
 class DishServices:
@@ -28,6 +29,9 @@ class DishServices:
         if not dishes:
             return dishes
         for dish in dishes:
+            discount = get_price_with_discount(str(dish.id))
+            if discount:
+                dish.__dict__['price_with_discount'] = discount
             dish.menu_id = menu_id
             dishes_list.append(dish)
         await create_background_task(key=key, value=dishes, background_tasks=self.background_tasks)
@@ -39,10 +43,12 @@ class DishServices:
 
         if cache_dish:
             return cache_dish
-
         dish: Dish = await DishRepository.read_by_id(submenu_id, target_id)
         if not dish:
             raise HTTPException(status_code=404, detail='dish not found')
+        discount = get_price_with_discount(str(dish.id))
+        if discount:
+            dish.__dict__['price_with_discount'] = discount
         dish.menu_id = menu_id
         await create_background_task(key=key, value=dish, background_tasks=self.background_tasks)
         return dish

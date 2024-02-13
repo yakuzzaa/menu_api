@@ -21,15 +21,16 @@ __Условия__:
 * Во время выдачи списка подменю, для каждого подменю добавлять кол-во блюд в этом подменю.
 * Во время запуска тестового сценария БД должна быть пуста.
 
-### 1. Фоновая задача реализована в google_sheet директории. Вместо локальной таблицы используется google sheets: https://docs.google.com/spreadsheets/d/1BUrzAiPP5ZVJ5VTjNHA5yTIMPNJmHVUWKSVbImB_Vb4/edit#gid=0
-### 2. Инвалидация кэша с помощью background tasks реализована в директории services
-### 3. Эндпоинт для получения всех меню со всеми подменю и блюдами -> views -> menu - > get_all
-### 4. Тест для эндпоинта tests -> crud_tests -> dish_api_test -> test_get_all_data
-### 5. Ручки api описаны в соответствии с OpenApi -> views
-### 6. Аналог django_reverse реализован в utils/urls_utils
-### 7. Вывод количества подменю и блюд для Меню одним сложным запросом реализован в services/menu на 15 и 48(функции find_all и find_by_id) строчках и в services/submenu на 15 и 44 строчках (функции find_all и find_by_id)
-### 8. Тестовый сценарий «Проверка кол-ва блюд и подменю в меню» из Postman реализован в tests/test_script_postman
-### 9. Не хватило времени, чтобы сделать блюда по акции. Если это возможно, сделаю до конца дедлайна по доработкам
+# Задания со звездочкой
+ 1. Фоновая задача реализована в google_sheet директории. Вместо локальной таблицы используется google sheets: https://docs.google.com/spreadsheets/d/1BUrzAiPP5ZVJ5VTjNHA5yTIMPNJmHVUWKSVbImB_Vb4/edit#gid=0
+ 2. Инвалидация кэша с помощью background tasks реализована в директории services
+ 3. Эндпоинт для получения всех меню со всеми подменю и блюдами -> views -> menu - > get_all
+ 4. Тест для эндпоинта tests -> crud_tests -> dish_api_test -> test_get_all_data
+ 5. Ручки api описаны в соответствии с OpenApi -> views
+ 6. Аналог django_reverse реализован в utils/urls_utils
+ 7. Вывод количества подменю и блюд для Меню одним сложным запросом реализован в services/menu на 15 и 48(функции find_all и find_by_id) строчках и в services/submenu на 15 и 44 строчках (функции find_all и find_by_id)
+ 8. Тестовый сценарий «Проверка кол-ва блюд и подменю в меню» из Postman реализован в tests/test_script_postman
+ 9. Блюда по акции реализованы в utils/discount_utils. Эта функция используется в services/dish/get_dish, services/dish/get_dish_by_id и в services/menu/full_menu_info
 
 ## Запуск проекта в Docker
 1. Склонировать репозиторий
