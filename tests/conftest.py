@@ -1,4 +1,6 @@
 import asyncio
+from asyncio import AbstractEventLoop
+from typing import Any, AsyncGenerator, Generator
 
 import pytest
 from httpx import AsyncClient
@@ -9,7 +11,7 @@ from main import app as fastapi_app
 
 
 @pytest.fixture(scope='session', autouse=True)
-async def prepare_database():
+async def prepare_database() -> None:
     if not database_exists:
         create_database(engine.url)
     async with engine.begin() as conn:
@@ -18,19 +20,19 @@ async def prepare_database():
 
 
 @pytest.fixture(scope='session')
-def event_loop(request):
-    loop = asyncio.get_event_loop_policy().new_event_loop()
+def event_loop(request: Any) -> Generator[AbstractEventLoop, Any, None]:
+    loop: AbstractEventLoop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
 
 
 @pytest.fixture(scope='function')
-async def async_client():
+async def async_client() -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(app=fastapi_app, base_url='http://test') as async_client:
         yield async_client
 
 
 @pytest.fixture(scope='function')
-async def session():
+async def session() -> AsyncGenerator:
     async with async_session_maker() as session:
         yield session
