@@ -1,4 +1,4 @@
-# Menu API | Homework Y_lab
+# Menu API 
 
 ## Техническое задание:
 
